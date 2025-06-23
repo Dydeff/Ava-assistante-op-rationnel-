@@ -2,12 +2,42 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ava - Assistant Vocal</title>
+  <title>Ava</title>
 </head>
 <body>
   <h1>Bonjour Dylan</h1>
   <p>Dis "Ava" pour démarrer une commande vocale.</p>
-  <script src="ava.js"></script>
+  <button onclick="startRecognition()">Activer Ava</button>
+
+  <script>
+    let recognition;
+
+    function startRecognition() {
+      if (!('webkitSpeechRecognition' in window)) {
+        alert("Reconnaissance vocale non supportée sur ce navigateur.");
+        return;
+      }
+
+      recognition = new webkitSpeechRecognition();
+      recognition.lang = 'fr-FR';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = function(event) {
+        const text = event.results[0][0].transcript.trim().toLowerCase();
+        if (text.includes("ava")) {
+          alert("Commande vocale détectée : " + text);
+        } else {
+          alert("Rien reconnu de spécial : " + text);
+        }
+      };
+
+      recognition.onerror = function(event) {
+        alert("Erreur : " + event.error);
+      };
+
+      recognition.start();
+    }
+  </script>
 </body>
 </html>
