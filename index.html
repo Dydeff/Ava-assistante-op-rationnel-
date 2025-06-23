@@ -1,1 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Ava - Assistant Vocal</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; background: #f4f4f4; text-align: center; }
+    h1 { color: #333; }
+    button { padding: 1em; font-size: 1.2em; border-radius: 10px; border: none; background: #4CAF50; color: white; cursor: pointer; }
+    .status { margin-top: 1em; font-weight: bold; color: #666; }
+    .commands { margin-top: 2em; font-size: 0.9em; color: #888; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto; }
+  </style>
+</head>
+<body>
+  <h1>Bonjour Dylan 👋</h1>
+  <p>Dis simplement <strong>"Ava"</strong> pour activer ton assistant.</p>
+  <button onclick="startRecognition()">Activer Ava</button>
+  <div class="status" id="status">En attente de commande vocale...</div>
+
+  <div class="commands">
+    <h3>Commandes disponibles :</h3>
+    <ul>
+      <li>Quelle heure est-il ?</li>
+      <li>Quelle est la date ?</li>
+      <li>Raconte une blague</li>
+      <li>Quel est mon nom ?</li>
+      <li>Répète après moi [phrase]</li>
+      <li>Ajoute [quelque chose] à mon agenda</li>
+      <li>Quelle est la météo ?</li>
+      <li>Silence</li>
+      <li>Active le mode réunion</li>
+    </ul>
+  </div>
+
+  <script>
+    const synth = window.speechSynthesis;
+    let recognition;
+    let userName = "Dylan";
+
+    function speak(text) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'fr-FR';
+      utterance.pitch = 1;
+      utterance.rate = 1;
+      utterance.voice = synth.getVoices().find(voice => voice.lang.includes('fr') && voice.name.toLowerCase().includes('female')) || synth.getVoices()[0];
+      synth.speak(utterance);
+    }
+
+    function processCommand(command) {
+      const status = document.getElementById("status");
+      status.textContent = "Commande reconnue : " + command;
+
+      if (command.includes("heure")) {
+        const time = new Date().toLocaleTimeString('fr-FR');
+        speak("Il est " + time);
+      } else if (command.includes("date")) {
+        const date = new Date().toLocaleDateString('fr-FR');
+        speak("Nous sommes le " + date);
+      } else if (command.includes("blague")) {
+        speak("Pourquoi les développeurs n'aiment pas la nature ? Parce qu’il y a trop de bugs !");
+      } else if (command.includes("nom")) {
+        speak("Tu t'appelles " + userName);
+      } else if (command.includes("répète après moi")) {
+        const phrase = command.split("répète après moi")[1];
+        if (phrase) speak(phrase.trim());
+        else speak("Je n’ai rien à répéter.");
+      } else if (command.includes("ajoute") && command.includes("agenda")) {
+        speak("C'est noté dans ton agenda, même si ce n’est pas encore synchronisé.");
+      } else if (command.includes("météo")) {
+        speak("Il fait actuellement beau et 25 degrés.");
+      } else if (command.includes("silence")) {
+        synth.cancel();
+        speak("Je reste silencieuse.");
+      } else if (command.includes("mode réunion")) {
+        speak("Appel simulé lancé. Vous avez un mail très urgent, Dylan.");
+      } else {
+        speak("Commande non reconnue, peux-tu répéter ?");
+      }
+    }
+
+    function startRecognition() {
+      if (!('webkitSpeechRecognition' in window)) {
+        alert("Reconnaissance vocale non supportée sur ce navigateur.");
+        return;
+      }
+
+      recognition = new webkitSpeechRecognition();
+      recognition.lang = 'fr-FR';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = function(event) {
+        const text = event.results[0][0].transcript.trim().toLowerCase();
+        if (text.includes("ava")) {
+          speak("Je t'écoute");
+          setTimeout(() => {
+            recognition.start();
+          }, 1500);
+        } else {
+          processCommand(text);
+        }
+      };
+
+      recognition.onerror = function(event) {
+        document.getElementById("status").textContent = "Erreur : " + event.error;
+      };
+
+      recognition.onend = function() {
+        recognition.start(); // Redémarre automatiquement
+      };
+
+      recognition.start();
+      document.getElementById("status").textContent = "Ava est à l'écoute...";
+    }
+
+    window.onload = function() {
+      speak("Bonjour Dylan, comment vas-tu ? Par quoi souhaites-tu commencer la journée ?");
+    };
+  </script>
+</body>
+</html>
 
